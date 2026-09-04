@@ -1,1 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Thought Chisel II</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#121220;--surface:#1a1a2e;--card:#22223a;
+--amber:#e8a838;--amber-glow:rgba(232,168,56,0.25);
+--teal:#4a9a8f;--stone:#d4cfc4;--text:#f0ece4;
+--muted:#8888a0;--error:#d94848;
+}
+body{
+font-family:'Inter',system-ui,sans-serif;
+background:var(--bg);color:var(--text);
+min-height:100dvh;display:flex;flex-direction:column;
+-webkit-tap-highlight-color:transparent;
+}
+a{color:var(--amber);text-decoration:none}
+a:hover{text-decoration:underline}
 
+/* Header */
+.header{
+display:flex;align-items:center;justify-content:space-between;
+padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-right{display:flex;align-items:center;gap:4px}
+.back-link{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.back-link:hover{color:var(--amber)}
+.app-title{
+font-family:'Playfair Display',serif;font-size:18px;font-weight:700;
+color:var(--text);letter-spacing:0.5px;
+}
+.settings-btn{
+background:none;border:none;color:var(--muted);font-size:20px;
+cursor:pointer;padding:6px;border-radius:8px;
+transition:color 0.2s;
+}
+.settings-btn:hover{color:var(--amber)}
+
+/* Main content */
+.main{
+flex:1;display:flex;flex-direction:column;
+align-items:center;padding:20px;
+max-width:600px;width:100%;margin:0 auto;
+}
+
+/* Welcome state */
+.welcome{text-align:center;margin-top:clamp(30px,8vh,80px)}
+.welcome h2{
+font-family:'Playfair Display',serif;font-size:clamp(24px,5vw,32px);
+font-weight:700;margin-bottom:12px;line-height:1.3;
+}
+.welcome p{
+color:var(--muted);font-size:15px;line-height:1.6;
+max-width:380px;margin:0 auto 8px;
+}
+
+/* Depth selection */
+.depth-options{display:flex;gap:14px;margin-top:28px;flex-wrap:wrap;justify-content:center}
+.depth-btn{
+display:flex;flex-direction:column;align-items:center;gap:4px;
+padding:20px 28px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);
+background:var(--card);color:var(--text);cursor:pointer;
+font-family:'Inter',sans-serif;transition:all 0.2s;min-width:120px;
+}
+.depth-btn:hover{border-color:var(--amber);color:var(--amber)}
+.depth-btn-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700}
+.depth-btn-sub{font-size:12px;color:var(--muted)}
+
+/* Mic button */
+.mic-wrap{margin:clamp(24px,5vh,48px) 0}
+.mic-btn{
+width:88px;height:88px;border-radius:50%;
+border:3px solid var(--amber);
+background:rgba(232,168,56,0.08);
+color:var(--amber);font-size:32px;
+cursor:pointer;position:relative;
+transition:all 0.3s;
+display:flex;align-items:center;justify-content:center;
+}
+.mic-btn:hover{background:rgba(232,168,56,0.15)}
+.mic-btn.listening{
+border-color:var(--teal);color:var(--teal);
+background:rgba(74,154,143,0.1);
+animation:pulse 1.5s ease-in-out infinite;
+}
+.mic-btn.speaking-state{
+border-color:var(--amber);color:var(--amber);
+animation:pulse 2s ease-in-out infinite;
+}
+.mic-btn:disabled{opacity:0.4;cursor:not-allowed;animation:none}
+@keyframes pulse{
+0%,100%{box-shadow:0 0 0 0 rgba(232,168,56,0.3)}
+50%{box-shadow:0 0 0 16px rgba(232,168,56,0)}
+}
+.mic-btn.listening .pulse-ring{
+position:absolute;inset:-8px;border-radius:50%;
+border:2px solid var(--teal);opacity:0;
+animation:ring-expand 1.5s ease-out infinite;
+}
+@keyframes ring-expand{
+0%{transform:scale(1);opacity:0.4}
+100%{transform:scale(1.4);opacity:0}
+}
+
+/* Status text */
+.status{
+font-size:13px;color:var(--muted);
+min-height:20px;text-align:center;
+transition:color 0.3s;
+}
+.status.active{color:var(--teal)}
+.status.error{color:var(--error)}
+
+/* Round indicator */
+.round-indicator{
+display:flex;gap:8px;margin:16px 0;
+}
+.round-dot{
+width:10px;height:10px;border-radius:50%;
+background:var(--card);border:2px solid var(--muted);
+transition:all 0.3s;
+}
+.round-dot.done{background:var(--amber);border-color:var(--amber)}
+.round-dot.current{border-color:var(--teal);background:rgba(74,154,143,0.3)}
+
+/* Conversation cards */
+.rounds-container{
+width:100%;display:flex;flex-direction:column;gap:16px;
+margin-top:20px;padding-bottom:24px;
+}
+.round-card{
+background:var(--card);border-radius:14px;
+padding:18px;border:1px solid rgba(255,255,255,0.05);
+animation:card-in 0.4s ease-out;
+}
+@keyframes card-in{
+from{opacity:0;transform:translateY(12px)}
+to{opacity:1;transform:translateY(0)}
+}
+.round-label{
+font-size:11px;text-transform:uppercase;letter-spacing:1.5px;
+color:var(--muted);margin-bottom:10px;font-weight:600;
+}
+.transcript{
+font-size:14px;line-height:1.6;color:var(--stone);
+margin-bottom:14px;padding-bottom:14px;
+border-bottom:1px solid rgba(255,255,255,0.06);
+font-style:italic;
+}
+.distilled{
+font-family:'Playfair Display',serif;
+font-size:17px;line-height:1.5;color:var(--text);
+margin-bottom:12px;font-weight:500;
+}
+.question{
+font-size:14px;line-height:1.5;color:var(--amber);
+padding:10px 14px;border-radius:8px;
+background:rgba(232,168,56,0.08);
+}
+
+/* Final / summary card */
+.round-card.final{
+border-color:var(--amber);
+background:linear-gradient(135deg,var(--card),rgba(232,168,56,0.06));
+}
+.final .distilled{font-size:20px}
+.tensions{
+margin-top:12px;
+}
+.tension-item{
+font-size:14px;line-height:1.5;color:var(--stone);
+padding:6px 0;
+}
+.tension-item+.tension-item{
+border-top:1px solid rgba(255,255,255,0.04);
+}
+.summary-row{margin-bottom:12px}
+.summary-row:last-child{margin-bottom:0}
+.summary-label{
+font-size:10px;text-transform:uppercase;letter-spacing:1.2px;
+color:var(--muted);margin-bottom:4px;font-weight:600;
+}
+
+/* Start over */
+.start-over-btn{
+margin-top:8px;padding:12px 28px;
+border-radius:10px;border:1px solid var(--amber);
+background:transparent;color:var(--amber);
+font-family:'Inter',sans-serif;font-size:14px;font-weight:500;
+cursor:pointer;transition:all 0.2s;
+}
+.start-over-btn:hover{background:rgba(232,168,56,0.1)}
+
+/* Live transcript */
+.live-transcript{
+background:var(--surface);border-radius:10px;
+padding:14px 16px;width:100%;margin-top:16px;
+font-size:14px;line-height:1.5;color:var(--stone);
+min-height:48px;font-style:italic;
+border:1px solid rgba(74,154,143,0.2);
+display:none;
+}
+.live-transcript.visible{display:block}
+
+/* Library */
+.library-list{width:100%;display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.library-item{
+text-align:left;background:var(--card);border:1px solid rgba(255,255,255,0.06);
+border-radius:12px;padding:14px 16px;cursor:pointer;color:var(--text);
+font-family:'Inter',sans-serif;transition:border-color 0.2s;width:100%;
+}
+.library-item:hover{border-color:var(--amber)}
+.library-item-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.library-depth-badge{
+font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:600;
+color:var(--teal);background:rgba(74,154,143,0.12);padding:3px 8px;border-radius:6px;
+}
+.library-date{font-size:12px;color:var(--muted)}
+.library-item-text{font-size:14px;line-height:1.4;color:var(--stone)}
+
+/* Settings modal */
+.modal-overlay{
+position:fixed;inset:0;background:rgba(0,0,0,0.7);
+z-index:100;display:none;align-items:center;justify-content:center;
+padding:20px;backdrop-filter:blur(4px);
+}
+.modal-overlay.open{display:flex}
+.modal{
+background:var(--surface);border-radius:16px;
+padding:28px 24px;width:100%;max-width:400px;
+border:1px solid rgba(255,255,255,0.08);
+}
+.modal h3{
+font-family:'Playfair Display',serif;font-size:20px;
+margin-bottom:20px;
+}
+.field{margin-bottom:16px}
+.field label{
+display:block;font-size:12px;font-weight:600;
+text-transform:uppercase;letter-spacing:1px;
+color:var(--muted);margin-bottom:6px;
+}
+.field input,.field select{
+width:100%;padding:10px 14px;
+background:var(--card);border:1px solid rgba(255,255,255,0.1);
+border-radius:8px;color:var(--text);
+font-family:'Inter',sans-serif;font-size:14px;
+}
+.field input:focus,.field select:focus{
+outline:none;border-color:var(--amber);
+}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions button{
+flex:1;padding:10px;border-radius:8px;
+font-family:'Inter',sans-serif;font-size:14px;
+cursor:pointer;font-weight:500;border:none;
+}
+.btn-save{background:var(--amber);color:#121220}
+.btn-cancel{background:var(--card);color:var(--text);border:1px solid rgba(255,255,255,0.1) !important}
+.voice-row{display:flex;gap:8px;align-items:stretch}
+.voice-row select{flex:1;min-width:0}
+.btn-test{
+background:var(--card);color:var(--teal);
+border:1px solid var(--teal);border-radius:8px;
+padding:0 14px;font-family:'Inter',sans-serif;font-size:13px;
+cursor:pointer;white-space:nowrap;font-weight:500;
+transition:background 0.2s;
+}
+.btn-test:hover{background:rgba(74,154,143,0.12)}
+
+/* Export actions */
+.export-actions{
+display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;
+justify-content:center;
+}
+.export-btn{
+padding:10px 20px;border-radius:10px;
+border:1px solid rgba(255,255,255,0.12);
+background:var(--card);color:var(--text);
+font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
+cursor:pointer;transition:all 0.2s;
+display:flex;align-items:center;gap:6px;
+}
+.export-btn:hover{border-color:var(--amber);color:var(--amber)}
+
+/* Unsupported message */
+.unsupported{
+text-align:center;margin-top:40px;padding:24px;
+background:var(--card);border-radius:14px;
+}
+.unsupported h2{font-family:'Playfair Display',serif;margin-bottom:12px;color:var(--error)}
+.unsupported p{color:var(--stone);font-size:14px;line-height:1.6}
+
+/* Footer */
+.footer{
+text-align:center;padding:12px;
+font-size:12px;color:var(--muted);
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <a href="https://augustineiacopelli.github.io/appaday/" class="back-link">
+      <span>&#8592;</span> <span>AppADay</span>
+    </a>
+    <span style="color:rgba(255,255,255,0.15)">|</span>
+    <span class="app-title">Thought Chisel II</span>
+  </div>
+  <div class="header-right">
+    <button class="settings-btn" onclick="openLibrary()" aria-label="Library" title="Library">&#128218;</button>
+    <button class="settings-btn" onclick="openSettings()" aria-label="Settings">&#9881;</button>
+  </div>
+</div>
+
+<div class="main" id="app">
+  <!-- Filled by JS -->
+</div>
+
+<div class="footer">
+  App #120 &middot; Thought Chisel II &middot; AI-Powered &middot; <a href="https://augustineiacopelli.github.io/appaday/">AppADay</a>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h3>Settings</h3>
+    <div class="field">
+      <label>Claude API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Voice</label>
+      <div class="voice-row">
+        <select id="voiceSelect"><option value="">Loading voices...</option></select>
+        <button type="button" class="btn-test" onclick="testVoice()">Test</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+      <button class="btn-save" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CLAUDE_MODEL = 'claude-sonnet-5';
+
+/* -- State -- */
+let state = {
+  phase: 'depth-select',   // depth-select | idle | listening | processing | speaking | complete | library
+  rounds: [],               // {transcript, distilled, question, tensions, keyTension, type}
+  currentRound: 0,
+  liveTranscript: '',
+  error: null,
+  depth: null,               // 'quick' | 'deep'
+  roundPlan: [],              // array of round type strings for the chosen depth
+  seedTranscript: null,        // pending seed transcript for a branched session
+  parentId: null,               // parentId to attach to the session once it completes
+  currentSessionId: null,        // id of the session currently on screen, once saved
+  currentParentId: null,          // parentId of the session currently on screen (if any)
+  viewingFromLibrary: false,       // true when the current complete screen came from the library
+  previousPhase: null
+};
+
+let recognition = null;
+let selectedVoiceURI = '';
+
+/* -- Saved sessions (library), loaded on page load -- */
+let savedSessions = [];
+try {
+  const raw = localStorage.getItem('tc_sessions');
+  savedSessions = raw ? JSON.parse(raw) : [];
+  if (!Array.isArray(savedSessions)) savedSessions = [];
+} catch (e) {
+  savedSessions = [];
+}
+
+/* -- Round plan -- */
+function getRoundPlan(depth) {
+  if (depth === 'quick') return ['clarifying', 'final'];
+  return ['clarifying', 'assumption-probing', 'implication-exploring', 'assumption-probing', 'final'];
+}
+
+function typeLabel(type) {
+  if (type === 'clarifying') return 'Clarifying';
+  if (type === 'assumption-probing') return 'Assumption';
+  if (type === 'implication-exploring') return 'Implication';
+  if (type === 'final') return 'Chiseled';
+  return '';
+}
+
+/* -- Speech Recognition setup -- */
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const speechSupported = !!SpeechRecognition;
+
+function initRecognition() {
+  if (!speechSupported) return;
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  let finalTranscript = '';
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        finalTranscript += t + ' ';
+      } else {
+        interim = t;
+      }
+    }
+    state.liveTranscript = (finalTranscript + interim).trim();
+    renderLiveTranscript();
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'no-speech' || e.error === 'aborted') return;
+    state.error = 'Microphone error: ' + e.error;
+    state.phase = 'idle';
+    render();
+  };
+
+  recognition.onend = () => {
+    // If we were still supposed to be listening (didn't manually stop), restart
+    // But only if phase is still listening (user didn't tap stop)
+  };
+
+  recognition._finalTranscript = () => finalTranscript.trim();
+  recognition._resetFinal = () => { finalTranscript = ''; };
+}
+
+/* -- Speech Synthesis -- */
+function speak(text, onEnd) {
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.95;
+  u.pitch = 1.0;
+
+  const voices = window.speechSynthesis.getVoices();
+  if (selectedVoiceURI) {
+    const v = voices.find(v => v.voiceURI === selectedVoiceURI);
+    if (v) u.voice = v;
+  } else {
+    // Default: pick a good English voice
+    const preferred = voices.find(v => v.lang.startsWith('en') && v.name.includes('Samantha'))
+      || voices.find(v => v.lang.startsWith('en') && !v.name.includes('Google') && v.localService)
+      || voices.find(v => v.lang.startsWith('en'));
+    if (preferred) u.voice = preferred;
+  }
+
+  u.onend = () => { if (onEnd) onEnd(); };
+  // Safari workaround: sometimes onend doesn't fire
+  const fallbackTimer = setTimeout(() => { if (onEnd) onEnd(); }, (text.length * 70) + 2000);
+  u.onend = () => { clearTimeout(fallbackTimer); if (onEnd) onEnd(); };
+
+  window.speechSynthesis.speak(u);
+}
+
+/* -- Claude API -- */
+async function callClaude(messages) {
+  const apiKey = localStorage.getItem('tc_api_key') || '';
+  if (!apiKey) {
+    throw new Error('API key not set. Tap the gear icon to add your Claude API key.');
+  }
+
+  const systemPrompt = buildSystemPrompt();
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: CLAUDE_MODEL,
+      max_tokens: 600,
+      system: systemPrompt,
+      messages: messages
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error('Claude API error: ' + resp.status);
+  }
+
+  const data = await resp.json();
+  return data.content.map(b => b.text || '').join('\n').trim();
+}
+
+function buildSystemPrompt() {
+  const idx = state.currentRound;
+  const total = state.roundPlan.length || 5;
+  const type = state.roundPlan[idx] || 'final';
+  const roundNum = idx + 1;
+
+  if (type === 'final') {
+    return `You are Thought Chisel, a Socratic idea refiner. This is the FINAL round (round ${roundNum} of ${total}).
+
+The user has been refining an idea through voiced conversation. Based on everything said so far, deliver the fully chiseled idea and name the single sharpest remaining tension in it.
+
+Respond in this exact format:
+CHISELED: [One crisp, refined sentence capturing the final idea]
+TENSION: [The single sharpest tension or unresolved question left in the idea, stated plainly, one sentence]
+DIMENSION: [A key dimension worth exploring next]
+DIMENSION: [Another dimension worth exploring next]
+
+No other text. No preamble.`;
+  }
+
+  const typeInstructions = {
+    'clarifying': 'Your job this round is CLARIFYING. Distill what they said into one clear, sharp sentence, then ask one pointed question that forces them to define a term or narrow the scope. Surface anything vague or undefined.',
+    'assumption-probing': 'Your job this round is ASSUMPTION-PROBING. Distill what they said into one clear, sharp sentence, then ask one pointed question that surfaces an unexamined assumption baked into the idea.',
+    'implication-exploring': 'Your job this round is IMPLICATION-EXPLORING. Distill what they said into one clear, sharp sentence, then ask one pointed question about a consequence, tradeoff, or downstream effect of the idea.'
+  };
+  const instruction = typeInstructions[type] || typeInstructions['clarifying'];
+
+  return `You are Thought Chisel, a Socratic idea refiner. This is round ${roundNum} of ${total}.
+
+The user speaks their thoughts aloud. ${instruction}
+
+Respond in this exact format:
+DISTILLED: [One sentence distillation]
+QUESTION: [One follow-up question]
+
+No other text. No preamble. Keep the question conversational - it will be read aloud.`;
+}
+
+function buildMessages(currentTranscript) {
+  const msgs = [];
+  for (let i = 0; i < state.rounds.length; i++) {
+    const r = state.rounds[i];
+    msgs.push({ role: 'user', content: r.transcript });
+    if (r.distilled) {
+      const assistantParts = [`DISTILLED: ${r.distilled}`];
+      if (r.question) assistantParts.push(`QUESTION: ${r.question}`);
+      if (r.tensions) assistantParts.push(r.tensions.map(t => `DIMENSION: ${t}`).join('\n'));
+      msgs.push({ role: 'assistant', content: assistantParts.join('\n') });
+    }
+  }
+  msgs.push({ role: 'user', content: currentTranscript });
+  return msgs;
+}
+
+function parseResponse(text) {
+  const distilledMatch = text.match(/(?:CHISELED|DISTILLED):\s*(.+)/);
+  const questionMatch = text.match(/QUESTION:\s*(.+)/);
+  const tensionMatch = text.match(/TENSION:\s*(.+)/);
+  const dimensionMatches = [...text.matchAll(/DIMENSION:\s*(.+)/g)];
+
+  return {
+    distilled: distilledMatch ? distilledMatch[1].trim() : text,
+    question: questionMatch ? questionMatch[1].trim() : null,
+    keyTension: tensionMatch ? tensionMatch[1].trim() : null,
+    tensions: dimensionMatches.length > 0 ? dimensionMatches.map(m => m[1].trim()) : null
+  };
+}
+
+/* -- Depth selection -- */
+function selectDepth(depth) {
+  state.depth = depth;
+  state.roundPlan = getRoundPlan(depth);
+  state.phase = 'idle';
+  render();
+
+  if (state.seedTranscript) {
+    const seed = state.seedTranscript;
+    state.seedTranscript = null;
+    processTranscript(seed);
+  }
+}
+
+/* -- Library -- */
+function openLibrary() {
+  state.previousPhase = state.phase;
+  state.phase = 'library';
+  render();
+}
+
+function closeLibrary() {
+  state.phase = state.previousPhase || 'depth-select';
+  render();
+}
+
+function openStoredSession(id) {
+  const session = savedSessions.find(s => s.id === id);
+  if (!session) return;
+  window.speechSynthesis.cancel();
+  if (recognition) try { recognition.stop(); } catch(e) {}
+
+  state.rounds = JSON.parse(JSON.stringify(session.rounds));
+  state.depth = session.depth;
+  state.roundPlan = getRoundPlan(session.depth);
+  state.currentRound = state.rounds.length;
+  state.phase = 'complete';
+  state.currentSessionId = session.id;
+  state.currentParentId = session.parentId || null;
+  state.viewingFromLibrary = true;
+  state.error = null;
+  render();
+}
+
+/* -- Save on complete -- */
+function maybeSaveCompletedSession() {
+  if (state.currentSessionId) return; // already a saved/stored session, do not duplicate
+  try {
+    const id = 'tc_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    const sessionObj = {
+      id: id,
+      timestamp: Date.now(),
+      depth: state.depth,
+      parentId: state.parentId || null,
+      rounds: state.rounds
+    };
+    savedSessions.unshift(sessionObj);
+    if (savedSessions.length > 50) savedSessions = savedSessions.slice(0, 50);
+    localStorage.setItem('tc_sessions', JSON.stringify(savedSessions));
+    state.currentSessionId = id;
+  } catch (e) {
+    // Storage unavailable or quota exceeded; the session remains viewable for this run only.
+  }
+}
+
+/* -- Branch: continue as new chisel -- */
+function branchFromSession() {
+  const rounds = state.rounds;
+  const last = rounds[rounds.length - 1];
+  const seedText = last ? last.distilled : '';
+  const parentId = state.currentSessionId || null;
+
+  window.speechSynthesis.cancel();
+  if (recognition) try { recognition.stop(); } catch(e) {}
+
+  state = {
+    phase: 'depth-select',
+    rounds: [],
+    currentRound: 0,
+    liveTranscript: '',
+    error: null,
+    depth: null,
+    roundPlan: [],
+    seedTranscript: seedText,
+    parentId: parentId,
+    currentSessionId: null,
+    currentParentId: null,
+    viewingFromLibrary: false,
+    previousPhase: null
+  };
+  render();
+}
+
+/* -- Actions -- */
+function startListening() {
+  if (!speechSupported || !recognition) return;
+  const apiKey = localStorage.getItem('tc_api_key') || '';
+  if (!apiKey) {
+    state.error = 'API key not set. Tap the gear icon to add your Claude API key.';
+    render();
+    return;
+  }
+
+  state.error = null;
+  state.liveTranscript = '';
+  state.phase = 'listening';
+  recognition._resetFinal();
+  render();
+
+  try {
+    recognition.start();
+  } catch(e) {
+    // Already started, ignore
+  }
+}
+
+function stopListening() {
+  if (!recognition) return;
+  try { recognition.stop(); } catch(e) {}
+
+  const transcript = state.liveTranscript.trim();
+  if (!transcript) {
+    state.phase = 'idle';
+    state.error = 'No speech detected. Try again.';
+    render();
+    return;
+  }
+
+  processTranscript(transcript);
+}
+
+async function processTranscript(transcript) {
+  state.phase = 'processing';
+  render();
+
+  try {
+    const roundType = state.roundPlan[state.currentRound] || 'final';
+    const messages = buildMessages(transcript);
+    const response = await callClaude(messages);
+    const parsed = parseResponse(response);
+
+    const roundData = {
+      transcript: transcript,
+      distilled: parsed.distilled,
+      question: parsed.question,
+      tensions: parsed.tensions,
+      keyTension: parsed.keyTension,
+      type: roundType
+    };
+
+    state.rounds.push(roundData);
+    state.currentRound = state.rounds.length;
+
+    const isFinal = roundType === 'final' || state.currentRound >= state.roundPlan.length || !parsed.question;
+
+    if (isFinal) {
+      // Final round
+      state.phase = 'complete';
+      maybeSaveCompletedSession();
+      render();
+      // Speak the final distillation
+      speak('Here is your chiseled idea. ' + parsed.distilled);
+    } else {
+      // Speak the follow-up question
+      state.phase = 'speaking';
+      render();
+      // Scroll to latest card
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.round-card');
+        if (cards.length) cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+
+      speak(parsed.question, () => {
+        // After speaking, auto-start listening for next round
+        state.phase = 'idle';
+        render();
+        setTimeout(() => startListening(), 400);
+      });
+    }
+  } catch (err) {
+    state.error = err.message;
+    state.phase = 'idle';
+    render();
+  }
+}
+
+function startOver() {
+  window.speechSynthesis.cancel();
+  if (recognition) try { recognition.stop(); } catch(e) {}
+  state = {
+    phase: 'depth-select',
+    rounds: [],
+    currentRound: 0,
+    liveTranscript: '',
+    error: null,
+    depth: null,
+    roundPlan: [],
+    seedTranscript: null,
+    parentId: null,
+    currentSessionId: null,
+    currentParentId: null,
+    viewingFromLibrary: false,
+    previousPhase: null
+  };
+  initRecognition();
+  render();
+}
+
+/* -- Rendering -- */
+function renderDepthSelect() {
+  return `
+    <div class="welcome">
+      <h2>How deep do<br>you want to go?</h2>
+      <p>Quick is two rounds: one clarifying pass, then the chiseled idea. Deep is five rounds working through assumptions and implications before the final cut.</p>
+    </div>
+    <div class="depth-options">
+      <button class="depth-btn" onclick="selectDepth('quick')">
+        <span class="depth-btn-title">Quick</span>
+        <span class="depth-btn-sub">2 rounds</span>
+      </button>
+      <button class="depth-btn" onclick="selectDepth('deep')">
+        <span class="depth-btn-title">Deep</span>
+        <span class="depth-btn-sub">5 rounds</span>
+      </button>
+    </div>`;
+}
+
+function renderLibrary() {
+  let html = `<div class="welcome" style="margin-top:24px"><h2 style="font-size:22px">Your Library</h2></div>`;
+
+  if (savedSessions.length === 0) {
+    html += `<p class="status" style="margin-top:8px">No saved chisels yet.</p>`;
+  } else {
+    html += '<div class="library-list">';
+    savedSessions.forEach(s => {
+      const last = s.rounds && s.rounds.length ? s.rounds[s.rounds.length - 1] : null;
+      const dateStr = new Date(s.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      html += `
+        <button class="library-item" onclick="openStoredSession('${s.id}')">
+          <div class="library-item-top">
+            <span class="library-depth-badge">${s.depth === 'deep' ? 'Deep' : 'Quick'}</span>
+            <span class="library-date">${dateStr}</span>
+          </div>
+          <div class="library-item-text">${escapeHtml(last ? last.distilled : '')}</div>
+        </button>`;
+    });
+    html += '</div>';
+  }
+
+  html += `<button class="start-over-btn" style="margin-top:20px" onclick="closeLibrary()">Back</button>`;
+  return html;
+}
+
+function renderSummaryCard() {
+  const rounds = state.rounds;
+  if (!rounds.length) return '';
+  const first = rounds[0];
+  const last = rounds[rounds.length - 1];
+  const tension = last.keyTension || (last.tensions && last.tensions[0]) || '';
+  const otherDimensions = (last.tensions || []).filter(t => t !== tension);
+
+  return `
+    <div class="round-card final">
+      <div class="round-label">&#10022; Chiseled Idea</div>
+      <div class="summary-row">
+        <div class="summary-label">Raw thought</div>
+        <div class="transcript">"${escapeHtml(first.transcript)}"</div>
+      </div>
+      <div class="summary-row">
+        <div class="summary-label">Final sentence</div>
+        <div class="distilled">${escapeHtml(last.distilled)}</div>
+      </div>
+      ${tension ? `
+      <div class="summary-row">
+        <div class="summary-label">Key tension</div>
+        <div class="question">${escapeHtml(tension)}</div>
+      </div>` : ''}
+      ${otherDimensions.length ? `<div class="tensions">${otherDimensions.map(t => `<div class="tension-item">&#8226; ${escapeHtml(t)}</div>`).join('')}</div>` : ''}
+    </div>`;
+}
+
+function render() {
+  const app = document.getElementById('app');
+
+  if (!speechSupported) {
+    app.innerHTML = `
+      <div class="unsupported">
+        <h2>Speech Not Supported</h2>
+        <p>Your browser doesn't support the Web Speech API. Try Chrome on desktop or mobile, or Safari on iOS 14.5 or later.</p>
+      </div>`;
+    return;
+  }
+
+  if (state.phase === 'depth-select') {
+    app.innerHTML = renderDepthSelect();
+    return;
+  }
+
+  if (state.phase === 'library') {
+    app.innerHTML = renderLibrary();
+    return;
+  }
+
+  const totalRounds = state.roundPlan.length || 5;
+  let html = '';
+
+  // Welcome text (only when no rounds yet)
+  if (state.rounds.length === 0 && state.phase !== 'listening') {
+    html += `
+      <div class="welcome">
+        <h2>Speak your idea.<br>Let it sharpen.</h2>
+        <p>Tap the mic and talk through whatever you're thinking. Thought Chisel will distill it, ask a follow-up, and refine across ${totalRounds} round${totalRounds === 1 ? '' : 's'} until your idea is razor-sharp.</p>
+      </div>`;
+  }
+
+  // Round cards first (so mic always appears below)
+  if (state.rounds.length > 0) {
+    html += '<div class="rounds-container">';
+    const historyRounds = state.phase === 'complete' ? state.rounds.slice(0, -1) : state.rounds;
+    historyRounds.forEach((r, i) => {
+      const label = `Round ${i + 1}` + (r.type ? ' &middot; ' + typeLabel(r.type) : '');
+      html += `
+        <div class="round-card">
+          <div class="round-label">${label}</div>
+          <div class="transcript">"${escapeHtml(r.transcript)}"</div>
+          <div class="distilled">${escapeHtml(r.distilled)}</div>
+          ${r.question ? `<div class="question">&#8220;${escapeHtml(r.question)}&#8221;</div>` : ''}
+        </div>`;
+    });
+    if (state.phase === 'complete') {
+      html += renderSummaryCard();
+    }
+    html += '</div>';
+  }
+
+  // Live transcript (between cards and mic)
+  if (state.phase === 'listening') {
+    html += `<div class="live-transcript visible" id="liveTranscript">${state.liveTranscript || 'Listening...'}</div>`;
+  }
+
+  // Round dots
+  if ((state.rounds.length > 0 || state.phase === 'listening') && state.phase !== 'complete') {
+    html += '<div class="round-indicator">';
+    for (let i = 0; i < totalRounds; i++) {
+      const cls = i < state.rounds.length ? 'done' : (i === state.rounds.length ? 'current' : '');
+      html += `<div class="round-dot ${cls}"></div>`;
+    }
+    html += '</div>';
+  }
+
+  // Mic button below everything (hidden when complete)
+  if (state.phase !== 'complete') {
+    const isListening = state.phase === 'listening';
+    const isSpeaking = state.phase === 'speaking';
+    const isProcessing = state.phase === 'processing';
+    const disabled = isProcessing || isSpeaking;
+    const btnClass = isListening ? 'listening' : (isSpeaking ? 'speaking-state' : '');
+
+    html += `
+      <div class="mic-wrap">
+        <button class="mic-btn ${btnClass}" ${disabled ? 'disabled' : ''}
+          onclick="${isListening ? 'stopListening()' : 'startListening()'}"
+          aria-label="${isListening ? 'Stop recording' : 'Start recording'}">
+          ${isListening ? '<span class="pulse-ring"></span>' : ''}
+          ${isSpeaking ? '&#9835;' : (isListening ? '&#9632;' : '&#127908;')}
+        </button>
+      </div>`;
+
+    let statusText = '';
+    let statusClass = '';
+    if (isListening) { statusText = 'Listening... tap to finish'; statusClass = 'active'; }
+    else if (isProcessing) { statusText = 'Chiseling your thought...'; statusClass = ''; }
+    else if (isSpeaking) { statusText = 'Speaking follow-up...'; statusClass = 'active'; }
+    else if (state.rounds.length > 0) { statusText = `Round ${state.rounds.length + 1} of ${totalRounds}`; }
+    else { statusText = 'Tap to begin'; }
+
+    html += `<div class="status ${statusClass}">${statusText}</div>`;
+  }
+
+  // Error
+  if (state.error) {
+    html += `<div class="status error">${state.error}</div>`;
+  }
+
+  // Complete state: export + branch + start over / back to library
+  if (state.phase === 'complete') {
+    html += `
+      <div class="export-actions">
+        <button class="export-btn" onclick="emailSession()">&#9993; Email</button>
+        <button class="export-btn" onclick="saveSession()">&#8681; Save</button>
+        <button class="export-btn" onclick="branchFromSession()">&#127807; Continue as new chisel</button>
+      </div>
+      <div class="export-actions">
+        ${state.viewingFromLibrary ? `<button class="start-over-btn" onclick="openLibrary()">Back to Library</button>` : ''}
+        <button class="start-over-btn" onclick="startOver()">Start a new thought</button>
+      </div>`;
+  }
+
+  app.innerHTML = html;
+
+  // Auto-scroll to bottom so mic stays visible
+  if (state.rounds.length > 0 && state.phase !== 'complete') {
+    setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 120);
+  }
+}
+
+function renderLiveTranscript() {
+  const el = document.getElementById('liveTranscript');
+  if (el) el.textContent = state.liveTranscript || 'Listening...';
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+/* -- Export -- */
+function buildSessionText() {
+  let text = 'THOUGHT CHISEL SESSION\n';
+  text += new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' }) + '\n';
+  text += '='.repeat(40) + '\n\n';
+
+  state.rounds.forEach((r, i) => {
+    const isFinal = (i === state.rounds.length - 1) && state.phase === 'complete';
+    if (isFinal) {
+      text += '*** CHISELED IDEA ***\n\n';
+      text += 'You said: "' + r.transcript + '"\n\n';
+      text += r.distilled + '\n\n';
+      if (r.tensions) {
+        text += 'Key dimensions:\n';
+        r.tensions.forEach(t => { text += '  - ' + t + '\n'; });
+      }
+    } else {
+      text += 'ROUND ' + (i + 1) + '\n\n';
+      text += 'You said: "' + r.transcript + '"\n\n';
+      text += 'Distilled: ' + r.distilled + '\n\n';
+      if (r.question) text += 'Follow-up: ' + r.question + '\n';
+      text += '\n' + '-'.repeat(30) + '\n\n';
+    }
+  });
+
+  return text;
+}
+
+function emailSession() {
+  const text = buildSessionText();
+  const subject = encodeURIComponent('Thought Chisel: ' + (state.rounds.length > 0 ? state.rounds[state.rounds.length - 1].distilled.substring(0, 60) : 'Session'));
+  const body = encodeURIComponent(text);
+  window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+}
+
+function saveSession() {
+  const text = buildSessionText();
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const dateStr = new Date().toISOString().slice(0, 10);
+  a.download = 'thought-chisel-' + dateStr + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* -- Settings -- */
+function openSettings() {
+  document.getElementById('apiKeyInput').value = localStorage.getItem('tc_api_key') || '';
+  populateVoices();
+  document.getElementById('settingsModal').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('open');
+}
+
+function saveSettings() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (key) localStorage.setItem('tc_api_key', key);
+  else localStorage.removeItem('tc_api_key');
+
+  const voiceSel = document.getElementById('voiceSelect');
+  selectedVoiceURI = voiceSel.value;
+  localStorage.setItem('tc_voice', selectedVoiceURI);
+
+  state.error = null;
+  closeSettings();
+  render();
+}
+
+function populateVoices() {
+  const sel = document.getElementById('voiceSelect');
+  const voices = window.speechSynthesis.getVoices();
+  const saved = localStorage.getItem('tc_voice') || '';
+
+  sel.innerHTML = '<option value="">Default</option>';
+  voices
+    .filter(v => v.lang.startsWith('en'))
+    .forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.voiceURI;
+      opt.textContent = v.name + (v.localService ? '' : ' (network)');
+      if (v.voiceURI === saved) opt.selected = true;
+      sel.appendChild(opt);
+    });
+
+  selectedVoiceURI = saved;
+}
+
+function testVoice() {
+  window.speechSynthesis.cancel();
+  const sel = document.getElementById('voiceSelect');
+  const u = new SpeechSynthesisUtterance('Here is what I sound like. Ready to chisel some thoughts?');
+  u.rate = 0.95;
+  u.pitch = 1.0;
+  const voices = window.speechSynthesis.getVoices();
+  if (sel.value) {
+    const v = voices.find(v => v.voiceURI === sel.value);
+    if (v) u.voice = v;
+  }
+  window.speechSynthesis.speak(u);
+}
+
+/* -- Init -- */
+window.speechSynthesis.onvoiceschanged = populateVoices;
+// Load voices eagerly
+setTimeout(() => window.speechSynthesis.getVoices(), 100);
+
+initRecognition();
+render();
+
+// Close modal on overlay click
+document.getElementById('settingsModal').addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal-overlay')) closeSettings();
+});
+</script>
+</body>
+</html>
