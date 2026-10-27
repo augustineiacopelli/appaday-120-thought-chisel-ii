@@ -10,6 +10,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="manifest" href="https://augustineiacopelli.github.io/appaday/manifests/120.webmanifest">
 <script src="https://augustineiacopelli.github.io/appaday/save.js" defer></script>
+<script src="https://augustineiacopelli.github.io/appaday/models.js"></script>
+<script src="https://augustineiacopelli.github.io/appaday/keys.js" data-app="120" data-legacy-key="tc_api_key" data-accent="#5B4BC4" defer></script>
 <title>Thought Chisel II | AppADay 120</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -340,10 +342,7 @@ font-size:12px;color:var(--muted);
 <div class="modal-overlay" id="settingsModal">
   <div class="modal">
     <h3>Settings</h3>
-    <div class="field">
-      <label>Claude API Key</label>
-      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off">
-    </div>
+    <div class="field"><div id="keyMount"><label>The key manager is loading. If this stays, check your connection and reload.</label></div></div>
     <div class="field">
       <label>Voice</label>
       <div class="voice-row">
@@ -359,7 +358,7 @@ font-size:12px;color:var(--muted);
 </div>
 
 <script>
-const CLAUDE_MODEL = await getModel();
+let CLAUDE_MODEL = (window.AppModels ? window.AppModels.id('sonnet') : '');
 
 /* -- State -- */
 let state = {
@@ -477,7 +476,7 @@ function speak(text, onEnd) {
 
 /* -- Claude API -- */
 async function callClaude(messages) {
-  const apiKey = localStorage.getItem('tc_api_key') || '';
+  const apiKey = window.AppKeys ? await window.AppKeys.get() : null;
   if (!apiKey) {
     throw new Error('API key not set. Tap the gear icon to add your Claude API key.');
   }
@@ -673,9 +672,9 @@ function branchFromSession() {
 /* -- Actions -- */
 function startListening() {
   if (!speechSupported || !recognition) return;
-  const apiKey = localStorage.getItem('tc_api_key') || '';
-  if (!apiKey) {
-    state.error = 'API key not set. Tap the gear icon to add your Claude API key.';
+  if (!(window.AppKeys && window.AppKeys.has())) {
+    if (window.AppKeys) window.AppKeys.get();
+    state.error = 'API key not set. Add your Claude API key, then tap the microphone again.';
     render();
     return;
   }
@@ -1045,7 +1044,7 @@ function saveSession() {
 
 /* -- Settings -- */
 function openSettings() {
-  document.getElementById('apiKeyInput').value = localStorage.getItem('tc_api_key') || '';
+  if (window.AppKeys) window.AppKeys.mountSettings(document.getElementById('keyMount'));
   populateVoices();
   document.getElementById('settingsModal').classList.add('open');
 }
@@ -1055,10 +1054,6 @@ function closeSettings() {
 }
 
 function saveSettings() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (key) localStorage.setItem('tc_api_key', key);
-  else localStorage.removeItem('tc_api_key');
-
   const voiceSel = document.getElementById('voiceSelect');
   selectedVoiceURI = voiceSel.value;
   localStorage.setItem('tc_voice', selectedVoiceURI);
@@ -1114,15 +1109,6 @@ document.getElementById('settingsModal').addEventListener('click', (e) => {
   if (e.target.classList.contains('modal-overlay')) closeSettings();
 });
 
-async function getModel(tier = 'sonnet') {
-  try {
-    const response = await fetch('../config.json');
-    const config = await response.json();
-    return config.models[tier];
-  } catch {
-    return 'claude-sonnet-5-5';
-  }
-}
 </script>
 </body>
 </html>
